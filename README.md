@@ -6,13 +6,13 @@ WeatherBot is an intelligent chatbot that provides real-time weather information
 
 ## Features
 
-- **LLM-Powered Query Understanding**  
+- **LLM-Powered Query Understanding :**  
   Understands natural language queries like _“What's the weather in Mumbai?” or "Shall I carry an umbrella in London?"_ using [Google's Gemma-3 model](https://huggingface.co/google/gemma-3-1b-it).
 
-- **Real-Time Weather Data**  
+- **Real-Time Weather Data :**  
   Retrieves live weather data from the [Weatherstack API](https://weatherstack.com/).
 
-- **Interactive Chat Interface**  
+- **Interactive Chat Interface :**  
   Built with Streamlit’s chat UI for an intuitive and responsive user experience.
 
 ---
