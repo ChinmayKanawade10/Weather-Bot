@@ -1,49 +1,53 @@
 import os
 import requests
 from dotenv import load_dotenv
-import google.generativeai as genai
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+import torch
 
 load_dotenv()
 
-gemini_token = os.getenv('gemini_api')
 weather_token = os.getenv('weatherstack_api')
 
-genai.configure(api_key=gemini_token)
+gemma_model = './gemma-3-model'
 
-# gemini_model = "gemini-2.0-flash-lite"
+tokenizer = AutoTokenizer.from_pretrained(gemma_model)
+model = AutoModelForCausalLM.from_pretrained(gemma_model, device_map="auto")
 
-def load_model():
-    '''This function uses Google's Generative AI library's GenerativeModel()
-     function to load the user specified model (in this case Gemini 2.0 Flash Lite)'''
+llm_pipeline = pipeline('text-generation', model=model, tokenizer=tokenizer)
 
-    gemini_model = "gemini-2.0-flash-lite"
-    return genai.GenerativeModel(model_name=gemini_model)
+def run_llm(prompt):
+    '''This function uses the Hugging Face Hub's pipeline method to generate
+    responses based on the input prompt'''
+
+    output = llm_pipeline(prompt, max_new_tokens=256, do_sample=True, temperature=0.6)
+
+    return output[0]['generated_text'].replace(prompt,' ').strip()
 
 def extract_city(user_query):
     '''This function uses an LLM model to extract the city name from the
     user query which is about the weather of a specific city'''
 
-    llm = load_model()
-    prompt = f'''
-    The query below contains a city name in it, extract the city name from the user query about weather:
+    prompt_for_location = f'''
+    The query below contains a city name in it, extract the city name from the following query:
     Query = "{user_query}"
     Only extract the city name and nothing else. Do not include any extra text or examples.'''
-    response = llm.generate_content(prompt)
-    city = response.text.strip()
 
-    return city
+    location = run_llm(prompt_for_location)
+
+    return location.strip()
 
 def get_weather(city):
     '''This function uses the weatherstack api to fetch the weather data
     about the city requested in the user query'''
 
     url = f"http://api.weatherstack.com/current?access_key={weather_token}&query={city}"
+
     response = requests.get(url)
     if response.status_code==200:
         data = response.json()
         if "current" in data: return data
         elif "error" in data: return {"error": f"API Error: {data['error']['info']}"}
-    return {"error": "Failed to fetch weather data. Check API key or city name."}
+    return {"error": "Failed to fetch weather data. Check API key or location."}
 
 def generate_response(weather_data, user_query):
     '''This function uses the llm, extracted weather data and user query
@@ -51,16 +55,15 @@ def generate_response(weather_data, user_query):
 
     if "error" in weather_data: return weather_data['error']
 
-    llm = load_model()
-
-    prompt_template = f'''
+    prompt_for_response = f'''
     You are an advanced weather assistant. Answer the user's query based on the following weather data.
     Weather data: {weather_data}
     User query: {user_query}
     Generate a helpful and natural response aligning to the user query'''
 
-    response = llm.generate_content(prompt_template)
-    return response.text.strip()
+    response = run_llm(prompt_for_response)
+
+    return response.strip()
 
 '''
 if __name__ == "__main__":
@@ -74,4 +77,5 @@ if __name__ == "__main__":
         bot_response = generate_response(weather_details, query)
         print(bot_response)
 '''
+
 #streamlit UI in app.py
