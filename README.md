@@ -55,7 +55,7 @@ streamlit run app.py
 ```
 ---
 
-## Example Query
+## Example Queries
 
 > *"Can you tell me the weather in Tokyo today?"*
 
@@ -64,6 +64,10 @@ WeatherBot will extract **Tokyo**, fetch the current weather, and respond with a
 > *"Is it raining in New York?"*
 
 WeatherBot will extract **New York** and it's current weather, and answer whether it is raining in New York or not.
+
+> *"Shall I wear a jacket if its snowing in Moscow?"*
+
+WeatherBot will extract **Moscow** with it's current weather, and answer whether user should wear a jacket or not based on whether it's snowing or not.
 
 ---
 
